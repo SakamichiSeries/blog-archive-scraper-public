@@ -10,7 +10,7 @@ jobs:
     steps:
     - name: Clone private repo
       env:
-        GITHUB_TOKEN: ${{ secrets.PAT }}
+        PAT: ${{ secrets.PAT }}
       run: |
         git clone https://x-access-token:${PAT}@github.com/SakamichiSeries/blog-archive-scraper.git
 
