@@ -1,0 +1,47 @@
+name: scraper
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clone private repo
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT }}
+      run: |
+        git clone https://x-access-token:${PAT}@github.com/SakamichiSeries/blog-archive-scraper.git
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.8' # Specify the Python version you need
+
+    - name: Install dependencies
+      run: |
+        cd blog-archive-scraper
+        pip install -r requirements.txt
+
+    - name: Run Python script
+      run: |
+        cd blog-archive-scraper
+        python scraper_dispatcher.py
+      env:
+        TOKEN_GITHUB: ${{ secrets.PAT }}
+        RUNNING_GITHUB_ACTIONS: True
+
+    - name: Commit and Push Changes
+      run: |
+          cd blog-archive-scraper
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add sent.json
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Update sent IDs - $(date)"
+            git push
+            echo "Changes committed and pushed."
+          else
+            echo "No changes to commit."
+          fi
