@@ -40,8 +40,24 @@ jobs:
           git add sent.json
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Update sent IDs - $(date)"
-            git push
-            echo "Changes committed and pushed."
+            attempt=0
+            max_attempts=5
+            until [ $attempt -ge $max_attempts ]
+            do
+              if git push; then
+                echo "Changes committed and pushed."
+                break
+              else
+                attempt=$((attempt+1))
+                echo "Push failed. Attempt $attempt/$max_attempts. Running git pull and retrying..."
+                git pull --rebase
+                sleep 10
+              fi
+            done
+            if [ $attempt -eq $max_attempts ]; then
+              echo "Push failed after $max_attempts attempts."
+              exit 1
+            fi
           else
             echo "No changes to commit."
           fi
