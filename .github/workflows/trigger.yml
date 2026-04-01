@@ -2,7 +2,7 @@ name: Scheduled Trigger
 
 on:
   schedule:
-    - cron: '0 3,7,11,23 * * *' # run at 1200 1500 2000 0800 JST
+    - cron: '30 2,6,10,22 * * *' 
   workflow_dispatch:
 
 jobs:
