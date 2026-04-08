@@ -3,6 +3,10 @@ name: scraper
 on:
   workflow_dispatch:
 
+concurrency:
+  group: blog-serial-global     # any constant string
+  cancel-in-progress: false    # DO NOT cancel; queue instead
+
 jobs:
   run-script:
     runs-on: ubuntu-latest
