@@ -21,7 +21,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.8' # Specify the Python version you need
+        python-version: '3.8'
 
     - name: Install dependencies
       run: |
@@ -65,3 +65,12 @@ jobs:
           else
             echo "No changes to commit."
           fi
+
+    - name: Wait and Trigger Self
+      env:
+        GH_TOKEN: ${{ secrets.PAT }}
+      run: |
+        echo "Waiting 180 seconds..."
+        sleep 180
+        echo "Triggering new workflow run..."
+        gh workflow run scraper.yml --repo SakamichiSeries/blog-archive-scraper-public
