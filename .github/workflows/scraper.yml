@@ -33,7 +33,9 @@ jobs:
     - name: Run Python script
       run: |
         cd blog-archive-scraper
-        python scraper_dispatcher.py
+        date
+        python scraper_dispatcher.py || date
+        date
       env:
         TOKEN_GITHUB: ${{ secrets.PAT }}
         RUNNING_GITHUB_ACTIONS: True
