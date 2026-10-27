@@ -33,40 +33,50 @@ jobs:
         EVENT_NAME: ${{ github.event_name }}
       run: |
         cd blog-archive-scraper
-        
-        # If triggered manually, skip time check and run immediately
+
+        run_scraper() {
+          date
+          python scraper_dispatcher_all.py || date
+          date
+        }
+
         if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
           echo "Manual trigger detected. Skipping time check and running immediately..."
+          run_scraper
         else
-          # Scheduled run: check JST time, wait if between 2 AM - 5 AM, else exit
-          python3 -c '
-          from datetime import datetime, time, timezone, timedelta
-          import time as t_mod
-          import sys
-          
-          jst = timezone(timedelta(hours=9))
-          now = datetime.now(jst)
-          current_time = now.time()
-          
-          start_time = time(2, 0, 0)
-          end_time = time(5, 0, 0)
-          
-          print(f"Current JST time: {now.strftime(\"%Y-%m-%d %H:%M:%S\")}")
-          
-          if start_time <= current_time < end_time:
-              print("Time is between 2 AM and 5 AM JST. Waiting until 5:00 AM JST...")
-              target = datetime.combine(now.date(), end_time, tzinfo=jst)
-              sleep_seconds = (target - now).total_seconds()
-              if sleep_seconds > 0:
-                  t_mod.sleep(sleep_seconds)
-              print("It is now 5:00 AM JST. Proceeding to run the program...")
-          else:
-              print("Outside the allowed time period (2 AM - 5 AM JST). Doing nothing (exiting).")
-              sys.exit(0)
-          '
+          cat > /tmp/time_check.py <<'PYEOF'
+        from datetime import datetime, time, timezone, timedelta
+        import time as t_mod
+        import sys
+
+        jst = timezone(timedelta(hours=9))
+        now = datetime.now(jst)
+        current_time = now.time()
+
+        start_time = time(2, 0, 0)
+        end_time = time(5, 0, 0)
+
+        print("Current JST time: " + now.strftime("%Y-%m-%d %H:%M:%S"))
+
+        if start_time <= current_time < end_time:
+            print("Time is between 2 AM and 5 AM JST. Waiting until 5:00 AM JST...")
+            target = datetime.combine(now.date(), end_time, tzinfo=jst)
+            sleep_seconds = (target - now).total_seconds()
+            if sleep_seconds > 0:
+                t_mod.sleep(sleep_seconds)
+            print("READY")
+        else:
+            print("SKIP")
+        PYEOF
+
+          DECISION="$(python3 /tmp/time_check.py)"
+          echo "$DECISION"
+
+          if echo "$DECISION" | grep -q '^READY$'; then
+            echo "Inside allowed time window. Running scraper..."
+            run_scraper
+          else
+            echo "Outside the allowed time period (2 AM - 5 AM JST). Doing nothing."
+            exit 0
+          fi
         fi
-        
-        # Run the Python script
-        date
-        python scraper_dispatcher_all.py || date
-        date
