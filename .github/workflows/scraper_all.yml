@@ -53,17 +53,13 @@ jobs:
         now = datetime.now(jst)
         current_time = now.time()
 
-        start_time = time(2, 0, 0)
-        end_time = time(5, 0, 0)
+        start_time = time(1, 0, 0)
+        end_time = time(8, 0, 0)
 
         print("Current JST time: " + now.strftime("%Y-%m-%d %H:%M:%S"))
 
         if start_time <= current_time < end_time:
-            print("Time is between 2 AM and 5 AM JST. Waiting until 5:00 AM JST...")
-            target = datetime.combine(now.date(), end_time, tzinfo=jst)
-            sleep_seconds = (target - now).total_seconds()
-            if sleep_seconds > 0:
-                t_mod.sleep(sleep_seconds)
+            print("Time is between 1 AM and 8 AM JST.")
             print("READY")
         else:
             print("SKIP")
@@ -76,7 +72,7 @@ jobs:
             echo "Inside allowed time window. Running scraper..."
             run_scraper
           else
-            echo "Outside the allowed time period (2 AM - 5 AM JST). Doing nothing."
+            echo "Outside the allowed time period (1 AM - 8 AM JST). Doing nothing."
             exit 0
           fi
         fi
