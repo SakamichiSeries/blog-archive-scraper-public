@@ -25,6 +25,8 @@ jobs:
       run: |
         cd blog-archive-scraper
         pip install -r requirements.txt
+        pip install playwright
+        playwright install chromium
 
     - name: Check time and run script
       env:
